@@ -1,2 +1,9 @@
 requests
 typing_extensions
+pandas
+polars
+tqdm
+ipywidgets
+ipykernel
+joblib
+youtube-transcript-api==0.6.3
