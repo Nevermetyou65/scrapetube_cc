@@ -290,11 +290,11 @@ def get_search_cc(
         "movie": ["E", "videoRenderer"],
     }
     sp_params = {
-        "creative_commons": "EgIwAQ%253D%253D",
-        "relevance": "CAASBBABMAE%253D",
-        "upload_date": "CAISBBABMAE%253D",
-        "view_count": "CAMSBBABMAE%253D",
-        "rating": "CAESBBABMAE%253D",
+        "creative_commons": "EgIwAQ%253D%253D", # only creative commons videos
+        "relevance": "CAASBBABMAE%253D", # creative commons videos and sort by relevance
+        "upload_date": "CAISBBABMAE%253D", # creative commons videos and sort by upload date
+        "view_count": "CAMSBBABMAE%253D", # creative commons videos and sort by view count
+        "rating": "CAESBBABMAE%253D", # creative commons videos and sort by rating
     }
     url = f"https://www.youtube.com/results?search_query={query}&sp={sp_params[sp_filter]}"
     api_endpoint = "https://www.youtube.com/youtubei/v1/search"
