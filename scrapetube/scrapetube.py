@@ -1,5 +1,8 @@
+"""Scrape youtube data"""
+
 import json
 import time
+import random
 from typing import Generator
 
 import requests
@@ -265,10 +268,10 @@ def get_search_subtitle_cc(
         yield video, url
 
 
-def get_search_cc(
+def get_search_creative_commons(
     query: str,
     limit: int = None,
-    sleep: int = 1,
+    sleep: tuple[int, int] = (1, 10),
     sp_filter: (
         Literal[
             "creative_commons", 
@@ -298,13 +301,14 @@ def get_search_cc(
     }
     url = f"https://www.youtube.com/results?search_query={query}&sp={sp_params[sp_filter]}"
     api_endpoint = "https://www.youtube.com/youtubei/v1/search"
+    sleep_time = random.randint(sleep[0], sleep[1])
     videos = get_videos(
         url,
         api_endpoint,
         "contents",
         results_type_map[results_type][1],
         limit,
-        sleep,
+        sleep_time,
         proxies,
     )
     for video in videos:
