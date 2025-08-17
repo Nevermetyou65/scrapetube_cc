@@ -7,14 +7,6 @@ import pandas as pd
 from loguru import logger
 
 from scrapetube.scrapetube import get_search_creative_commons
-from scrapetube.config import LOG_DIR, get_today_string
-
-
-def set_up_logger():
-    """Set up the logger with a timestamped log file."""
-    today_string = get_today_string()
-    log_file_path = LOG_DIR / f"metadata_{today_string}.log"
-    logger.add(log_file_path)
 
 
 def save_to_parquet(df: pd.DataFrame, file_path_parquet: str | Path) -> None:

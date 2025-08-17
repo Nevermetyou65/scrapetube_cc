@@ -15,8 +15,10 @@ dev = [
     "loguru>=0.7.3",
     "pandas>=2.3.1",
     "polars>=1.31.0",
+    "pythainlp>=5.1.2",
     "requests>=2.32.4",
     "tqdm>=4.67.1",
     "typing-extensions>=4.14.1",
     "youtube-transcript-api>=1.2.1",
+    "yt-dlp>=2025.7.21",
 ]

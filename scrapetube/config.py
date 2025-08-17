@@ -19,6 +19,7 @@ KEYWORD_VIDEOS_META_PARQUET = DATA_DIR / f"meta_data_{get_today_string()}.parque
 CHANNEL_VIDEOS_META_PARQUET = (
     DATA_DIR / f"channel_video_meta_{get_today_string()}.parquet"
 )
+SUBTITLES_PARQUET = DATA_DIR / f"subtitle_{get_today_string()}.parquet"
 VIDEO_BASE_URL = "https://www.youtube.com/watch?v="
 QUERY_STRINGS = [
     "คณิตศาสตร์",
