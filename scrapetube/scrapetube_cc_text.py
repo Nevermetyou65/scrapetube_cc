@@ -82,4 +82,4 @@ def create_items_from_dataframe(df: pl.DataFrame) -> list[dict]:
             ]
         ).alias("metadata"),
     )
-    return result_df.write_ndjson(TEXT_JSON_LINES)
+    result_df.write_ndjson(TEXT_JSON_LINES)

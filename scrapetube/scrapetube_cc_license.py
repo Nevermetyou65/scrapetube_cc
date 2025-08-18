@@ -1,3 +1,4 @@
+import sys
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -8,7 +9,6 @@ from loguru import logger
 
 YoutubeUrl = NewType("YoutubeUrl", str)
 NO_LICENSE = "NO_LICENSE"
-
 
 class YtDlpLoguruLogger:
     def debug(self, msg: str) -> None:
@@ -25,12 +25,6 @@ class YtDlpLoguruLogger:
 
     def critical(self, msg: str) -> None:
         logger.critical(msg)
-
-
-def random_sleep(*, sleep_min: float = 1.0, sleep_max: float = 3.0) -> None:
-    """Sleep for a random duration between sleep_min and sleep_max seconds."""
-    sleep_time = random.uniform(sleep_min, sleep_max)
-    time.sleep(sleep_time)
 
 
 def check_license_and_sub(
@@ -69,12 +63,12 @@ def check_license_and_sub(
 def process_video(
     video_url: YoutubeUrl,
     *,
-    sleep_min: float,
-    sleep_max: float,
+    sleep: tuple[int, int],
 ) -> dict[str, Any]:
     """Process a single video with error handling and rate limiting."""
     try:
-        random_sleep(sleep_min=sleep_min, sleep_max=sleep_max)
+        sleep_duration = random.randint(*sleep)
+        time.sleep(sleep_duration)
         result = check_license_and_sub(video_url)
         return result
     except Exception as exc:
@@ -93,8 +87,7 @@ def process_video(
 def process_videos_concurrent(
     video_urls: list[YoutubeUrl],
     *,
-    sleep_min: float = 1.0,
-    sleep_max: float = 3.0,
+    sleep: tuple[int, int] = (5, 25),
     max_workers: int = None,
 ) -> list[dict[str, Any]]:
     """Process multiple videos concurrently using a bounded thread pool."""
@@ -115,8 +108,7 @@ def process_videos_concurrent(
             executor.submit(
                 process_video,
                 url,
-                sleep_min=sleep_min,
-                sleep_max=sleep_max,
+                sleep=sleep,
             ): idx
             for idx, url in enumerate(url_list)
         }

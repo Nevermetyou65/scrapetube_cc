@@ -45,19 +45,17 @@ def _save_to_parquet(
             df.to_parquet(
                 file_path_parquet, engine="fastparquet", index=False, append=True
             )
-            logger.info(f"Saved {len(df)} to {file_path_parquet}")
         except FileNotFoundError:
             df.to_parquet(file_path_parquet, engine="fastparquet", index=False)
-            logger.info(f"Created {file_path_parquet}, saved {len(df)}")
         except Exception as e:
             logger.error(f"Parquet save error {file_path_parquet}: {e}")
 
 
 def get_video_transcript_data(
-    video_id: str, sleep_min: int = 1, sleep_max: int = 10, **kwargs
+    video_id: str, sleep: tuple[int, int] = (1, 10), **kwargs
 ) -> dict:
     """Fetch YouTube video transcript data with rate limiting."""
-    sleep_duration = random.randint(sleep_min, sleep_max)
+    sleep_duration = random.randint(*sleep)
     time.sleep(sleep_duration)
 
     fetched_transcript = fetch_thai_youtube_transcript(video_id, **kwargs)
@@ -90,8 +88,7 @@ def get_video_transcripts_concurrent(
     file_path_parquet: str | Path,
     batch_size: int = 64,
     max_workers: int | None = None,
-    sleep_min: int = 1,
-    sleep_max: int = 10,
+    sleep: tuple[int, int] = (1, 10),
     **kwargs,
 ):
     """
@@ -114,8 +111,7 @@ def get_video_transcripts_concurrent(
             executor.submit(
                 get_video_transcript_data,
                 video_id,
-                sleep_min=sleep_min,
-                sleep_max=sleep_max,
+                sleep=sleep,
                 **kwargs,
             ): video_id
             for video_id in video_ids
@@ -140,7 +136,6 @@ def get_video_transcripts_concurrent(
                 logger.error(f"Error video {video_id}: {exc}", exc_info=True)
             finally:
                 processed_count += 1
-                logger.info(f"Done {processed_count}/{total_videos}")
 
     if results_batch:
         _save_to_parquet(pd.DataFrame(results_batch), file_path_parquet, lock)
