@@ -18,7 +18,7 @@ from youtube_transcript_api import (
 from tqdm.auto import tqdm
 
 
-def fetch_thai_youtube_transcript(video_id: str, **kwargs) -> FetchedTranscript | None:
+def _fetch_thai_transcript(video_id: str, **kwargs) -> FetchedTranscript | None:
     """Fetch Thai language transcript for a YouTube video."""
     try:
         ytt_api = YouTubeTranscriptApi(**kwargs)
@@ -51,14 +51,14 @@ def _save_to_parquet(
             logger.error(f"Parquet save error {file_path_parquet}: {e}")
 
 
-def get_video_transcript_data(
+def _get_single_video_transcript(
     video_id: str, sleep: tuple[int, int] = (1, 10), **kwargs
 ) -> dict:
     """Fetch YouTube video transcript data with rate limiting."""
     sleep_duration = random.randint(*sleep)
     time.sleep(sleep_duration)
 
-    fetched_transcript = fetch_thai_youtube_transcript(video_id, **kwargs)
+    fetched_transcript = _fetch_thai_transcript(video_id, **kwargs)
 
     if fetched_transcript is None:
         return {
@@ -83,7 +83,7 @@ def get_video_transcript_data(
     }
 
 
-def get_video_transcripts_concurrent(
+def fetch_video_transcripts_concurrent(
     video_ids: list[str],
     file_path_parquet: str | Path,
     batch_size: int = 64,
@@ -109,7 +109,7 @@ def get_video_transcripts_concurrent(
     ) as executor:
         future_to_video_id = {
             executor.submit(
-                get_video_transcript_data,
+                _get_single_video_transcript,
                 video_id,
                 sleep=sleep,
                 **kwargs,

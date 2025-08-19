@@ -1,7 +1,7 @@
 import re
 import polars as pl
 from pythainlp.util import normalize
-from scrapetube.config import get_today_string, DATA_DIR
+from scrapetube.utils.config import get_timestamp_string, DATA_DIR
 
 pl.Config.set_tbl_width_chars(100)
 pl.Config.set_fmt_str_lengths(100)
@@ -9,7 +9,7 @@ pl.Config.set_fmt_str_lengths(100)
 PAT1 = re.compile(r"([ก-๙])([a-zA-Z0-9])")
 PAT2 = re.compile(r"([a-zA-Z0-9])([ก-๙])")
 
-TEXT_JSON_LINES = DATA_DIR / f"text_{get_today_string()}.jsonl"
+TEXT_JSON_LINES = DATA_DIR / f"text_{get_timestamp_string()}.jsonl"
 
 
 def _insert_space_thai_english(text: str) -> str:
@@ -52,7 +52,7 @@ def convert_subtitles_to_text(df: pl.DataFrame, max_gap: int = 1) -> pl.DataFram
     )
 
 
-def create_items_from_dataframe(df: pl.DataFrame) -> list[dict]:
+def export_dataframe_to_jsonl(df: pl.DataFrame) -> list[dict]:
     """
     Transforms a DataFrame into a list of dictionaries with a specific structure.
 

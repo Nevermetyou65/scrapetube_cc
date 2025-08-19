@@ -1,4 +1,5 @@
-import sys
+"""Module for extracting video license information using yt_dlp."""
+
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -27,7 +28,7 @@ class YtDlpLoguruLogger:
         logger.critical(msg)
 
 
-def check_license_and_sub(
+def _extract_video_license_info(
     video_url: YoutubeUrl,
 ) -> dict[str, Any]:
     """Extract video information using yt_dlp and return license and subtitle status."""
@@ -60,7 +61,7 @@ def check_license_and_sub(
         raise
 
 
-def process_video(
+def _process_single_video(
     video_url: YoutubeUrl,
     *,
     sleep: tuple[int, int],
@@ -69,7 +70,7 @@ def process_video(
     try:
         sleep_duration = random.randint(*sleep)
         time.sleep(sleep_duration)
-        result = check_license_and_sub(video_url)
+        result = _extract_video_license_info(video_url)
         return result
     except Exception as exc:
         logger.error(f"Error processing video {video_url}: {exc}")
@@ -84,7 +85,7 @@ def process_video(
         }
 
 
-def process_videos_concurrent(
+def check_video_licenses_concurrent(
     video_urls: list[YoutubeUrl],
     *,
     sleep: tuple[int, int] = (5, 25),
@@ -106,7 +107,7 @@ def process_videos_concurrent(
     ) as executor:
         future_to_index = {
             executor.submit(
-                process_video,
+                _process_single_video,
                 url,
                 sleep=sleep,
             ): idx

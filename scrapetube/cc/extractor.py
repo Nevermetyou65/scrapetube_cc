@@ -12,7 +12,7 @@ from tqdm.auto import tqdm
 from scrapetube.scrapetube import get_search_creative_commons
 
 
-def save_to_parquet(df: pd.DataFrame, file_path_parquet: str | Path) -> None:
+def _save_to_parquet(df: pd.DataFrame, file_path_parquet: str | Path) -> None:
     """Save a DataFrame to a parquet file, appending if possible."""
     try:
         df.to_parquet(file_path_parquet, engine="fastparquet", index=False, append=True)
@@ -22,7 +22,7 @@ def save_to_parquet(df: pd.DataFrame, file_path_parquet: str | Path) -> None:
         logger.error(f"Save error {file_path_parquet}: {e}")
 
 
-def extract_video_metadata(video_meta: dict) -> dict | None:
+def _extract_video_metadata(video_meta: dict) -> dict | None:
     """Extract relevant metadata fields from a video metadata dictionary."""
     try:
         video_id = video_meta.get("videoId", "").strip()
@@ -54,7 +54,7 @@ def extract_video_metadata(video_meta: dict) -> dict | None:
         return None
 
 
-def make_request(
+def _make_search_request(
     query: str,
     limit: int,
     sleep: tuple[int, int],
@@ -80,7 +80,7 @@ def make_request(
         return []
 
 
-def process_video_metadata(
+def _process_video_metadata_batch(
     video_meta_list: list[dict],
     query: str,
     video_base_url: str,
@@ -90,7 +90,7 @@ def process_video_metadata(
     successful_extractions = 0
     logger.info(f"Processing {len(video_meta_list)} for '{query}'")
     for video_meta in video_meta_list:
-        extracted_data = extract_video_metadata(video_meta)
+        extracted_data = _extract_video_metadata(video_meta)
         if extracted_data:
             extracted_data.update(
                 {
@@ -108,7 +108,7 @@ def process_video_metadata(
     return items
 
 
-def collect_and_save_video_metadata(
+def collect_video_metadata(
     query: str,
     limit: int,
     sleep: tuple[int, int],
@@ -120,7 +120,7 @@ def collect_and_save_video_metadata(
 ) -> None:
     """Collect video metadata for a query and save the results to a parquet file."""
     logger.info(f"Searching: {query}")
-    video_meta_list = make_request(
+    video_meta_list = _make_search_request(
         query, limit, sleep, sp_filter, results_type, proxies
     )
     if video_meta_list:
@@ -130,15 +130,16 @@ def collect_and_save_video_metadata(
         logger.warning(f"No results: '{query}'")
         return
 
-    items = process_video_metadata(video_meta_list, query, video_base_url)
+    items = _process_video_metadata_batch(video_meta_list, query, video_base_url)
 
     if items:
-        save_to_parquet(pd.DataFrame(items), file_path_parquet)
+        _save_to_parquet(pd.DataFrame(items), file_path_parquet)
     else:
         logger.warning(f"No valid items: '{query}'")
 
 
-def save_to_parquet_thread_safe(
+# From this line, for concurrent processing
+def _save_to_parquet_threadsafe(
     df: pd.DataFrame, file_path_parquet: str | Path, lock: threading.Lock
 ) -> None:
     """Save a DataFrame to a parquet file, appending if possible (thread-safe)."""
@@ -155,7 +156,7 @@ def save_to_parquet_thread_safe(
             logger.error(f"Save error {file_path_parquet}: {e}")
 
 
-def process_single_query(
+def _process_single_search_query(
     query: str,
     limit: int,
     sleep: tuple[int, int],
@@ -168,7 +169,7 @@ def process_single_query(
 ) -> dict:
     """Process a single query and return the results with metadata."""
     try:
-        video_meta_list = make_request(
+        video_meta_list = _make_search_request(
             query, limit, sleep, sp_filter, results_type, proxies
         )
 
@@ -179,9 +180,9 @@ def process_single_query(
                 "items_count": 0,
                 "error": "No results found",
             }
-        items = process_video_metadata(video_meta_list, query, video_base_url)
+        items = _process_video_metadata_batch(video_meta_list, query, video_base_url)
         if items:
-            save_to_parquet_thread_safe(pd.DataFrame(items), file_path_parquet, lock)
+            _save_to_parquet_threadsafe(pd.DataFrame(items), file_path_parquet, lock)
             return {
                 "query": query,
                 "success": True,
@@ -200,7 +201,7 @@ def process_single_query(
         return {"query": query, "success": False, "items_count": 0, "error": str(exc)}
 
 
-def collect_and_save_video_metadata_concurrent(
+def collect_video_metadata_concurrent(
     queries: list[str],
     limit: int,
     sleep: tuple[int, int],
@@ -228,7 +229,7 @@ def collect_and_save_video_metadata_concurrent(
     ) as executor:
         future_to_query = {
             executor.submit(
-                process_single_query,
+                _process_single_search_query,
                 query,
                 limit,
                 sleep,

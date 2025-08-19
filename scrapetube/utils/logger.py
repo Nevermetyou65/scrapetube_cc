@@ -3,7 +3,7 @@ import logging
 import sys
 
 from loguru import logger
-from scrapetube.config import LOG_DIR, get_today_string
+from scrapetube.utils.config import LOG_DIR, get_timestamp_string
 
 LOG_LEVEL = getattr(logging, os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -31,10 +31,11 @@ def setup_logging(write_to_file: bool = True):
     logging.root.setLevel(LOG_LEVEL)
 
     for name in logging.root.manager.loggerDict.keys():
-        logging.getLogger(name).handlers = []
-        logging.getLogger(name).propagate = True
+        if name not in ["ipykernel", "ipykernel.comm", "IPKernelApp"]:
+            logging.getLogger(name).handlers = []
+            logging.getLogger(name).propagate = True
 
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": JSON_LOGS}])
     if write_to_file:
-        log_file_path = LOG_DIR / f"metadata_{get_today_string()}.log"
+        log_file_path = LOG_DIR / f"metadata_{get_timestamp_string()}.log"
         logger.add(log_file_path)

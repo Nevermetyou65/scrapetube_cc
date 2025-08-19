@@ -5,7 +5,7 @@ from pathlib import Path
 from pytz import timezone
 
 
-def get_today_string():
+def get_timestamp_string():
     """Return today's date string in the format YYYYMMDD_HHMMSS (Bangkok time)."""
     bangkok_tz = timezone("Asia/Bangkok")
     today_date = datetime.now(bangkok_tz)
@@ -13,13 +13,13 @@ def get_today_string():
     return today_string
 
 
-LOG_DIR = Path(__file__).parent.parent / "logs"
-DATA_DIR = Path(__file__).parent.parent / "data"
-KEYWORD_VIDEOS_META_PARQUET = DATA_DIR / f"meta_data_{get_today_string()}.parquet"
-CHANNEL_VIDEOS_META_PARQUET = (
-    DATA_DIR / f"channel_video_meta_{get_today_string()}.parquet"
-)
-SUBTITLES_PARQUET = DATA_DIR / f"subtitle_{get_today_string()}.parquet"
+# Current file is scrapetube/utils/config.py, navigate to project root
+PROJECT_ROOT = Path(__file__).parent.parent.parent.resolve()
+LOG_DIR = PROJECT_ROOT / "logs"
+DATA_DIR = PROJECT_ROOT / "data"
+KEYWORD_VIDEOS_META_PARQUET = DATA_DIR / f"meta_data_{get_timestamp_string()}.parquet"
+CHANNEL_VIDEOS_META_PARQUET = DATA_DIR / f"channel_video_meta_{get_timestamp_string()}.parquet"
+SUBTITLES_PARQUET = DATA_DIR / f"subtitle_{get_timestamp_string()}.parquet"
 VIDEO_BASE_URL = "https://www.youtube.com/watch?v="
 QUERY_STRINGS = [
     "คณิตศาสตร์",
