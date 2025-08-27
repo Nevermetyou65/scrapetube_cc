@@ -1,5 +1,8 @@
+"""Scrape youtube data"""
+
 import json
 import time
+import random
 from typing import Generator
 
 import requests
@@ -8,7 +11,7 @@ from typing_extensions import Literal
 type_property_map = {
     "videos": "videoRenderer",
     "streams": "videoRenderer",
-    "shorts": "reelItemRenderer",
+    "shorts": "reelWatchEndpoint"
 }
 
 
@@ -194,81 +197,10 @@ def get_search(
     for video in videos:
         yield video
 
-
-def get_search_subtitle_cc(
+def get_search_creative_commons(
     query: str,
     limit: int = None,
-    sleep: int = 1,
-    sort_by: Literal["relevance", "upload_date", "view_count", "rating"] | None = None,
-    results_type: Literal["video", "channel", "playlist", "movie"] = "video",
-    proxies: dict = None,
-) -> Generator[dict, None, None]:
-    """Search youtube and get videos.
-
-    Parameters:
-        query (``str``):
-            The term you want to search for.
-
-        limit (``int``, *optional*):
-            Limit the number of videos you want to get.
-
-        sleep (``int``, *optional*):
-            Seconds to sleep between API calls to youtube, in order to prevent getting blocked.
-            Defaults to 1.
-
-        sort_by (``str``, *optional*):
-            In what order to retrieve to videos. Pass one of the following values.
-            ``"relevance"``: Get the new videos in order of relevance.
-            ``"upload_date"``: Get the new videos first.
-            ``"view_count"``: Get the popular videos first.
-            ``"rating"``: Get videos with more likes first.
-            Defaults to "relevance".
-
-        results_type (``str``, *optional*):
-            What type you want to search for. Pass one of the following values:
-            ``"video"|"channel"|"playlist"|"movie"``. Defaults to "video".
-
-        proxies (``dict``, *optional*):
-            A dictionary with the proxies you want to use. Ex:
-            ``{'https': 'http://username:password@101.102.103.104:3128'}``
-
-    """
-
-    results_type_map = {
-        "video": ["B", "videoRenderer"],
-        "channel": ["C", "channelRenderer"],
-        "playlist": ["D", "playlistRenderer"],
-        "movie": ["E", "videoRenderer"],
-    }
-    sp_param = "EgQoATAB"
-    sp_params_sort_by = {
-        "relevance": "CAASBhABKAEwAQ%253D%253D",
-        "upload_date": "CAISBhABKAEwAQ%253D%253D",
-        "view_count": "CAMSBhABKAEwAQ%253D%253D",
-        "rating": "CAESBhABKAEwAQ%253D%253D",
-    }
-    if sort_by:
-        url = f"https://www.youtube.com/results?search_query={query}&sp={sp_params_sort_by[sort_by]}"
-    else:
-        url = f"https://www.youtube.com/results?search_query={query}&sp={sp_param}"
-    api_endpoint = "https://www.youtube.com/youtubei/v1/search"
-    videos = get_videos(
-        url,
-        api_endpoint,
-        "contents",
-        results_type_map[results_type][1],
-        limit,
-        sleep,
-        proxies,
-    )
-    for video in videos:
-        yield video, url
-
-
-def get_search_cc(
-    query: str,
-    limit: int = None,
-    sleep: int = 1,
+    sleep: tuple[int, int] = (1, 10),
     sp_filter: (
         Literal[
             "creative_commons", 
@@ -290,21 +222,22 @@ def get_search_cc(
         "movie": ["E", "videoRenderer"],
     }
     sp_params = {
-        "creative_commons": "EgIwAQ%253D%253D",
-        "relevance": "CAASBBABMAE%253D",
-        "upload_date": "CAISBBABMAE%253D",
-        "view_count": "CAMSBBABMAE%253D",
-        "rating": "CAESBBABMAE%253D",
+        "creative_commons": "EgIwAQ%253D%253D", # only creative commons videos
+        "relevance": "CAASBBABMAE%253D", # creative commons videos and sort by relevance
+        "upload_date": "CAISBBABMAE%253D", # creative commons videos and sort by upload date
+        "view_count": "CAMSBBABMAE%253D", # creative commons videos and sort by view count
+        "rating": "CAESBBABMAE%253D", # creative commons videos and sort by rating
     }
     url = f"https://www.youtube.com/results?search_query={query}&sp={sp_params[sp_filter]}"
     api_endpoint = "https://www.youtube.com/youtubei/v1/search"
+    sleep_time = random.randint(sleep[0], sleep[1])
     videos = get_videos(
         url,
         api_endpoint,
         "contents",
         results_type_map[results_type][1],
         limit,
-        sleep,
+        sleep_time,
         proxies,
     )
     for video in videos:
