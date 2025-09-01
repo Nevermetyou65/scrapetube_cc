@@ -4,9 +4,10 @@
 
 ## ⚠️ Important Notice
 
-🚨 **This code is for research and educational purposes only** - not intended for production use!  
-🔧 There are several sub-optimal points in the codebase <br>
-🤝 **We welcome seasonal contributors!** Feel free to contribute and help make this project better
+**Please consider using the official YouTube API first!** <br>
+This code is for research and educational purposes only - not intended for production use! <br>
+There are several sub-optimal points in the codebase. <br>
+**We welcome seasonal contributors!** Feel free to contribute and help make this project better
 
 ## 🚀 Quick Start
 
